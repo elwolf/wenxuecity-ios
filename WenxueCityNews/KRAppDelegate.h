@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-#define APP_COLOR [UIColor colorWithRed:75/255.0f  green:101/255.0f  blue:157/255.0f alpha:1.0f]
+#define IS_IPHONE (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone)
+#define IS_IPHONE_5 (IS_IPHONE && [[UIScreen mainScreen] bounds].size.height == 568.0f)
 
 @class KRNewsListController;
 
@@ -23,5 +24,6 @@
 
 - (void)saveContext;
 - (NSURL *)applicationDocumentsDirectory;
++ (NSString *)nibNameForClass:(Class)class;
 
 @end

@@ -7,11 +7,19 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Reachability.h"
+#import "SVSegmentedControl.h"
+#import "ODRefreshControl.h"
 
 @interface KRNewsListController : UITableViewController
 {
+    NSDateFormatter *dateFormatter;
+    Reachability* internetReachable;
+    SVSegmentedControl* switcher;
+    ODRefreshControl *refreshControl;
+    UIBarButtonItem* refreshButton;
+    NSArray* titleArray;
 }
-- (IBAction)refreshNews:(id)sender;
-- (IBAction)systemConfig:(id)sender;
+- (void)refreshNews:(id)sender;
 
 @end

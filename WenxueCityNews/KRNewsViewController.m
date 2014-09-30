@@ -34,7 +34,7 @@
     [self setToolbarItems:[NSArray arrayWithObjects: space, shareButtonItem, nil]];
 
 
-    int fontSize = [[[KRConfigStore sharedStore] fontSize] intValue];
+    int fontSize = [[KRConfigStore sharedStore] fontSize];
     switch(fontSize)
     {
         case 0: fontSize = 75; break;

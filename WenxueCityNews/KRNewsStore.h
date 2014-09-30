@@ -11,8 +11,7 @@
 #import <CoreData/CoreData.h>
 
 #define FETCH_INTERVAL 300 // 5 minutes
-#define BASE_URL_PATTERN @"http://wenxuecity.cloudfoundry.com/news/mobilelist?from=%d&to=%d&max=%d&appKey=H5T7GDF9KJS"
-#define BASE_URL @"http://wenxuecity.cloudfoundry.com/"
+#define BASE_URL_PATTERN @"http://wenxuecity.cloudfoundry.com/news/mobilelist?full=false&from=%d&to=%d&max=%d&appKey=H5T7GDF9KJS"
 
 @class KRNews;
 
@@ -20,10 +19,16 @@
 {
     NSMutableArray *allItems;
     NSMutableDictionary *keyedItems;
-    NSManagedObjectContext *context;
-    NSManagedObjectModel *model;
+    
+    NSMutableArray *unreadItems;
+    
+    NSMutableArray *markItems;
+    NSMutableDictionary *keyedMarkItems;
+    
+    NSMutableSet *readItems;
+
     BOOL loading;
-    NSTimeInterval dateFetched;    
+    NSTimeInterval dateFetched;
 }
 
 + (KRNewsStore *)sharedStore;
@@ -32,17 +37,13 @@
 
 - (NSArray *)allItems;
 
-- (void)addItem:(KRNews *)news;
+- (void)cacheNews:(KRNews*)news;
 
-- (NSString *)itemArchivePath;
+- (void)addItem:(KRNews *)news;
 
 - (void)saveItems:(int)itemCount;
 
-- (void)loadAllItems;
-
-- (int) unread;
-
-- (int) total;
+- (int) total:(NSInteger)type;
 
 - (int) maxNewsId;
 
@@ -50,12 +51,16 @@
 
 - (BOOL) loading;
 
-- (KRNews *)nextItem:(NSInteger)newsId;
+- (void) populateUnread;
 
-- (KRNews *)prevItem:(NSInteger)newsId;
+- (BOOL)isBookmarked:(KRNews *)news;
 
-- (KRNews *)itemAt:(NSInteger)index;
+- (void)bookmark:(KRNews *)news mark:(BOOL)mark;
+
+- (KRNews *)itemAt:(NSInteger)index forType:(NSInteger)type;
 
 - (void) loadNews: (int)from to:(int)to max:(int)max appendToTop:(BOOL)appendToTop force:(BOOL)force withHandler:(void (^)(NSArray *newsArray, NSError *error))handler;
+
+- (void)setOverviewImage:(KRNews *)news inView:(UIImageView*)imageView;
 
 @end

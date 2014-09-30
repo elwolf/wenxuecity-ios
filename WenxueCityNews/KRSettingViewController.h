@@ -7,10 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "KRSelectionViewController.h"
 
-@interface KRSettingViewController : UITableViewController
+@interface KRSettingViewController : UITableViewController<KRSelectionViewControllerDelegate>
 {
-    int numbOfItems;
-    int fontSize;
+    NSMutableDictionary* settingMap;
 }
+- (void)itemSelected:(KRSelectionViewController *)controller withIndex: (NSInteger)index;
+
 @end

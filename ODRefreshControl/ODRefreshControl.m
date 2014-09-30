@@ -68,6 +68,7 @@ static inline CGFloat lerp(CGFloat a, CGFloat b, CGFloat p)
         _activity.center = CGPointMake(floor(self.frame.size.width / 2), floor(self.frame.size.height / 2));
         _activity.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
         _activity.alpha = 0;
+        
         if ([_activity respondsToSelector:@selector(startAnimating)]) {
             [(UIActivityIndicatorView *)_activity startAnimating];
         }

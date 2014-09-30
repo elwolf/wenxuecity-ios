@@ -12,6 +12,10 @@
 #import "KRConfigStore.h"
 #import "KRSettingViewController.h"
 #import "KRBookmarkViewController.h"
+#import "Reachability.h"
+#import "MLNavigationController.h"
+#import "KRUrlCache.h"
+#import "MMDrawerController.h"
 
 @implementation KRAppDelegate
 
@@ -23,40 +27,64 @@
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     // Override point for customization after application launch.
-            
+    
+    UIColor *appColor = [[KRConfigStore sharedStore] appUIColor];
+    
     KRNewsListController *hc = [[KRNewsListController alloc] init];
     UINavigationController* nhc = [[UINavigationController alloc] initWithRootViewController:hc];
-    nhc.delegate = self;
+    nhc.delegate = self;    
+    nhc.navigationBar.tintColor = appColor;
+    nhc.toolbar.tintColor = appColor;
     
-    nhc.navigationBar.tintColor = APP_COLOR;
-    nhc.toolbar.tintColor = APP_COLOR;
+    KRBookmarkViewController *bc = [[KRBookmarkViewController alloc] init];
+    UINavigationController* nbc = [[UINavigationController alloc] initWithRootViewController:bc];
+    nbc.delegate = self;
+    nbc.navigationBar.tintColor = appColor;
+    nbc.toolbar.tintColor = appColor;
     
-    KRBookmarkViewController *bvc = [[KRBookmarkViewController alloc] init];
-    UINavigationController* nbvc = [[UINavigationController alloc] initWithRootViewController:bvc];
-    nbvc.delegate = self;
+    KRSettingViewController *sc = [[KRSettingViewController alloc] init];    
+    UINavigationController *nsc = [[UINavigationController alloc] initWithRootViewController:sc];
+    nsc.delegate = self;    
+    nsc.navigationBar.tintColor = appColor;
+    nsc.toolbar.tintColor = appColor;
     
-    nbvc.navigationBar.tintColor = APP_COLOR;
-    nbvc.toolbar.tintColor = APP_COLOR;
+/*
+    MMDrawerController * drawerController = [[MMDrawerController alloc]
+                                             initWithCenterViewController:nhc
+                                             leftDrawerViewController:nsc
+                                             rightDrawerViewController:nbc];
+    [drawerController setMaximumRightDrawerWidth:[drawerController maximumLeftDrawerWidth]];
+    [drawerController setOpenDrawerGestureModeMask:MMOpenDrawerGestureModeAll];
+    [drawerController setCloseDrawerGestureModeMask:MMCloseDrawerGestureModeAll];
+*/
+    [[self window] setRootViewController:nhc];
     
-    KRSettingViewController *svc = [[KRSettingViewController alloc] init];
-    UINavigationController* nsvc = [[UINavigationController alloc] initWithRootViewController:svc];
-    nsvc.delegate = self;
+    [[UINavigationBar appearance] setTitleTextAttributes:
+     [NSDictionary dictionaryWithObjectsAndKeys:
+      [UIColor whiteColor], UITextAttributeTextColor,
+      [UIFont fontWithName:APP_FONT_BOLD size:18], UITextAttributeFont,nil]];
+
+    [NSURLCache setSharedURLCache:[[KRUrlCache alloc] init]];
     
-    nsvc.navigationBar.tintColor = APP_COLOR;
-    nsvc.toolbar.tintColor = APP_COLOR;
-    
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    //[[UITabBar appearance] setTintColor:APP_COLOR];
-    
-    NSArray *viewControllers = [NSArray arrayWithObjects:nhc, nbvc, nsvc, nil];
-    [tabBarController setViewControllers:viewControllers];
-    
-    [[self window] setRootViewController:tabBarController];
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(themeChanged:)
+                                                 name:@"themeChanged"
+                                               object:nil];
 
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
+    //NSLog(@"Available fonts: %@", [UIFont familyNames]);
+    
     return YES;
+}
+
+- (void)themeChanged:(NSNotification *)notification
+{
+    UIColor* uiColor = [[KRConfigStore sharedStore] appUIColor];
+    UINavigationController *nsc = (UINavigationController *)[[self window] rootViewController];
+    nsc.navigationBar.tintColor = uiColor;
+    nsc.toolbar.tintColor = uiColor;
 }
 
 - (void)navigationController:(UINavigationController *)navController willShowViewController:(UIViewController *)viewController animated:(BOOL)animated
@@ -76,13 +104,21 @@
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     [[KRConfigStore sharedStore] save];
-    int numbOfItems = [[[KRConfigStore sharedStore] pageSize] intValue];
+    int numbOfItems = [[KRConfigStore sharedStore] itemCount];
     [[KRNewsStore sharedStore] saveItems: numbOfItems];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
-    // Called as part of the transition from the background to the inactive state; here you can undo many of the changes made on entering the background.
+    NSLog(@"Application activated");
+    int maxNewsId = [[KRNewsStore sharedStore] maxNewsId];
+    [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:YES];
+    [[KRNewsStore sharedStore] loadNews:0 to:maxNewsId max:100 appendToTop:YES force:NO withHandler:^(NSArray *newsArray, NSError *error) {
+        if(newsArray && [newsArray count]) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"storeUpdated" object:[KRNewsStore sharedStore]];
+        }
+        [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:NO];
+    }];
 }
 
 - (void)applicationDidBecomeActive:(UIApplication *)application
@@ -189,6 +225,22 @@
 - (NSURL *)applicationDocumentsDirectory
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
+}
+
++ (NSString *)nibNameForClass:(Class)class
+{
+    if(IS_IPHONE && IS_IPHONE_5)
+    {
+        return [NSString stringWithFormat:@"%@%@", NSStringFromClass(class), @"~iphone_ext"];
+    }
+    else if(IS_IPHONE)
+    {
+        return [NSString stringWithFormat:@"%@%@", NSStringFromClass(class), @"~iphone"];
+    }
+    else
+    {
+        return [NSString stringWithFormat:@"%@%@", NSStringFromClass(class), @"~ipad"];
+    }
 }
 
 @end

@@ -27,10 +27,16 @@
 
 #import "VerticalSwipeScrollView.h"
 #import <MessageUI/MessageUI.h>
+#import "MBProgressHUD.h"
+#import "FGalleryViewController.h"
+#import "KRNews.h"
 
-@interface KRDetailViewController : UIViewController <VerticalSwipeScrollViewDelegate, UIScrollViewDelegate, MFMailComposeViewControllerDelegate>
+@interface KRDetailViewController : UIViewController <VerticalSwipeScrollViewDelegate, UIScrollViewDelegate, MFMailComposeViewControllerDelegate, UIActionSheetDelegate, MBProgressHUDDelegate, UIWebViewDelegate, FGalleryViewControllerDelegate>
 {
-    NSDateFormatter *dateFormatter;
+    UIBarButtonItem* bookmarkButton;
+    UIBarButtonItem* galleryButton;
+    NSMutableArray* unmarkedNews;
+    FGalleryViewController *galleryController;
 }
 @property (nonatomic, retain) IBOutlet UIView* headerView;
 @property (nonatomic, retain) IBOutlet UIImageView* headerImageView;
@@ -40,8 +46,11 @@
 @property (nonatomic, retain) IBOutlet UILabel* footerLabel;
 @property (nonatomic, retain) VerticalSwipeScrollView* verticalSwipeScrollView;
 @property (nonatomic) NSUInteger startIndex;
+@property (nonatomic) NSUInteger stopIndex;
+@property (nonatomic) NSInteger viewType;
 @property (nonatomic, retain) UIWebView* previousPage;
 @property (nonatomic, retain) UIWebView* nextPage;
+@property (nonatomic, retain) NSDateFormatter* dateFormatter;
 
 @end
 
